@@ -1,0 +1,13 @@
+.DS_Store
+*.log
+*.zip
+*.sha1
+*.iml
+.idea
+.classpath
+.project
+.settings
+classes
+plugin.xml
+target
+web-app
