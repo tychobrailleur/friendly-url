@@ -1,21 +1,23 @@
 import friendlyurl.SlugNormalizer
 import friendlyurl.SluggedUpdateListener
+import org.codehaus.groovy.grails.commons.GrailsClassUtils
+import org.codehaus.groovy.grails.exceptions.RequiredPropertyMissingException
 
 class FriendlyUrlGrailsPlugin {
-    def version = "0.1"
-    def grailsVersion = "2.4 > *"
+    def version = '0.1'
+    def grailsVersion = '2.4 > *'
     def pluginExcludes = [
-        "grails-app/views/error.gsp"
+        'grails-app/views/error.gsp'
     ]
-    def title = "Friendly Url Plugin"
-    def author = "Sébastien Le Callonnec"
-    def authorEmail = "sebastien@weblogism.com"
-    def description = "This plugin creates pretty human-friendly URLs."
+    def title = 'Friendly Url Plugin'
+    def author = 'Sébastien Le Callonnec'
+    def authorEmail = 'sebastien@weblogism.com'
+    def description = 'This plugin creates pretty human-friendly URLs.'
     def documentation = "http://grails.org/plugin/friendly-url"
-    def issueManagement = [ system: "JIRA", url: "http://jira.grails.org/browse/GPMYPLUGIN" ]
-    def scm = [ url: "http://svn.codehaus.org/grails-plugins/" ]
+    def issueManagement = [ system: 'github', url: 'https://github.com/tychobrailleur/friendly-url/issues' ]
+    def scm = [ url: 'https://github.com/tychobrailleur/friendly-url' ]
     def license = 'MIT'
-    
+
     def doWithSpring = {
         slugNormalizer(SlugNormalizer)
     }
@@ -26,7 +28,9 @@ class FriendlyUrlGrailsPlugin {
     def doWithApplicationContext = { ctx ->
         def slugNormalizer = ctx.getBean('slugNormalizer')
         application.domainClasses.each {
-            addSlugGeneration(it, ctx)
+            if (it.hasProperty('slug')) {
+                addSlugGeneration(it, ctx)
+            }
         }
 
         application.mainContext.eventTriggeringInterceptor.datastores.each { k, datastore ->
@@ -37,10 +41,13 @@ class FriendlyUrlGrailsPlugin {
     private void addSlugGeneration(subject, ctx) {
         def slugNormalizer = ctx.getBean('slugNormalizer')
 
-        if (subject.hasProperty('slug')) {
-            subject.metaClass.normalizeSlug = { ->
-                slug = slugNormalizer.normalize(name)
+        subject.metaClass.normalizeSlug = { ->
+            if (!slugCandidate) {
+                throw new RequiredPropertyMissingException('slugCandidate is required.')
             }
+
+            def candidate = getProperty(slugCandidate)
+            slug = slugNormalizer.normalize(candidate)
         }
     }
 }
