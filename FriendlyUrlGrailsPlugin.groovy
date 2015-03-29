@@ -13,7 +13,7 @@ class FriendlyUrlGrailsPlugin {
     def author = 'Sébastien Le Callonnec'
     def authorEmail = 'sebastien@weblogism.com'
     def description = 'This plugin creates pretty human-friendly URLs.'
-    def documentation = "http://grails.org/plugin/friendly-url"
+    def documentation = 'http://grails.org/plugin/friendly-url'
     def issueManagement = [ system: 'github', url: 'https://github.com/tychobrailleur/friendly-url/issues' ]
     def scm = [ url: 'https://github.com/tychobrailleur/friendly-url' ]
     def license = 'MIT'
@@ -42,12 +42,17 @@ class FriendlyUrlGrailsPlugin {
         def slugNormalizer = ctx.getBean('slugNormalizer')
 
         subject.metaClass.normalizeSlug = { ->
-            if (!slugCandidate) {
-                throw new RequiredPropertyMissingException('slugCandidate is required.')
-            }
+//            if (!GrailsClassUtils.getStaticFieldValue(getClass(), 'slugCandidate')) {
+//                throw new RequiredPropertyMissingException("${subject.name}: slugCandidate is required.")
+//            }
 
-            def candidate = getProperty(slugCandidate)
-            slug = slugNormalizer.normalize(candidate)
+            // TODO find a way to check slugCandidate's existence without throwing exception.
+            try {
+                def candidate = getProperty(slugCandidate)
+                slug = slugNormalizer.normalize(candidate)
+            } catch (MissingPropertyException e) {
+                throw new RequiredPropertyMissingException("${subject.name}: slugCandidate is required.")
+            }
         }
     }
 }
